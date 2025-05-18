@@ -1,0 +1,17 @@
+import { defineConfig } from '@playwright/test';
+
+export default defineConfig({
+    testDir: '../tests',
+    projects: [
+        {
+            name: 'api',
+            testMatch: /tests\/api\/.*\.spec\.ts/,
+        },
+        {
+            name: 'ui',
+            testMatch: /tests\/ui\/.*\.spec\.ts/,
+        },
+    ],
+    reporter: [['list'], ['html']],
+    use: { trace: 'retain-on-failure' },
+});

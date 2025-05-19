@@ -2,9 +2,9 @@ name: e2e
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   pull_request:
-    branches: [ main ]
+    branches: [main]
 
 jobs:
   tests:
@@ -16,44 +16,40 @@ jobs:
       AIRALO_CLIENT_SECRET: ${{ secrets.AIRALO_CLIENT_SECRET }}
 
     steps:
-      # 1. Checkout
+
+      # 1. checkout
       - uses: actions/checkout@v4
 
-      # 2. Install pnpm (adds it to PATH)
+      # 2. Node + pnpm (with cache)
       - uses: pnpm/action-setup@v3
-        with:
-          version: 8
-          run_install: false
-
-      # 3. Setup Node + **enable pnpm cache**
+        with: { version: 8 }
       - uses: actions/setup-node@v4
         with:
           node-version: 20
+          cache: pnpm
 
-      # 4. Install deps
+      # 3. deps + browsers
       - run: pnpm install --no-frozen-lockfile
-
-      # 5. Install Playwright browsers
       - run: pnpm exec playwright install --with-deps
 
-      # 6. Run tests
+      # 4. run the whole suite
       - name: Run tests
-        run: pnpm run test
-        continue-on-error: false
-        id: tests
+        run: pnpm exec playwright test --config=configs/playwright.config.ts
+        continue-on-error: false           # fail the job when tests fail
 
-      # 7. Build the static HTML (creates ./playwright-report)
+      # 5. (Optional) build static HTML if you *didn’t* use the html reporter
+      #    Comment this out if you already generate the report in step 4.
       - name: Build HTML report
+        if: always()
         run: pnpm exec playwright show-report --quiet
-        if: always()
 
-      # 8. Upload report + traces
-      - name: Upload Playwright artifacts
-        uses: actions/upload-artifact@v4
+      # 6. upload artefacts – will always exist now
+      - name: Upload Playwright report
         if: always()
+        uses: actions/upload-artifact@v4
         with:
           name: playwright-report
           path: |
-            playwright-report
-            test-results/**/*.zip
+            playwright-report              # static HTML dashboard
+            test-results/**/*.zip          # zipped traces
           retention-days: 14

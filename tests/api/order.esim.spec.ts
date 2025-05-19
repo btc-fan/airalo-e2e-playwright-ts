@@ -10,3 +10,20 @@ test('create one Kallur eSIM', async () => {
     expect(res.status).toBe(200);
     expect(res.data.data.package_id).toBe(slug);
 });
+
+// basic happy-flow: order six “Merhaba” eSIMs
+test('create bulk Merhaba order (6 × 1 GB / 7 days)', async () => {
+    const slug     = 'merhaba-7days-1gb';
+    const quantity = 6;
+
+    const form = buildOrderForm(slug, quantity, 'bulk-api-exercise');
+
+    const res  = await api.post(ORDERS, form, { headers: form.getHeaders() });
+    const body = res.data.data;
+
+    expect(res.status).toBe(200);
+    expect(body.package_id).toBe(slug);
+    expect(body.quantity).toBe(quantity);
+
+    expect(body.sims).toHaveLength(quantity);
+});

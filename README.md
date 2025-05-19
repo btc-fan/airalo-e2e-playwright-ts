@@ -1,14 +1,14 @@
 # Airalo E2E (Playwright + TypeScript)
 
-API and UI automation skeleton for the Airalo homework task.
+API and UI automation framework for the Airalo homework task.
 
 ## 1 · Prerequisites
 
 | Tool | Version | Notes |
 |------|---------|-------|
-| Node | ≥ 20 | tested on 20.11 |
-| pnpm | ≥ 8  | `npm i -g pnpm` |
-| Playwright browsers | installed once via CLI | see step 3 |
+| **Node** | ≥ 20 | verified on 20.11 |
+| **pnpm** | ≥ 8  | `npm i -g pnpm` |
+| **Playwright browsers** | once via CLI | see step 2 |
 
 ## 2 · Clone & Install
 
@@ -16,77 +16,96 @@ API and UI automation skeleton for the Airalo homework task.
 git clone https://github.com/<your-user>/airalo-e2e-playwright-ts.git
 cd airalo-e2e-playwright-ts
 pnpm install                    # deps
-pnpm exec playwright install    # chromium / ff / webkit
+pnpm exec playwright install    # chromium / firefox / webkit
 ```
 
 ## 3 · Environment variables
 
-Create `configs/env/.env` (git-ignored) and paste:
+Create `configs/env/.env` (git-ignored):
 
 ```ini
-# sandbox endpoints
+# ───────── sandbox hosts ─────────
 AIRALO_AUTH_URL=https://sandbox-partners-api.airalo.com/v2/token
 AIRALO_BASE_URL=https://sandbox-partners-api.airalo.com
 
-# demo credentials from task
-AIRALO_CLIENT_ID=<CLIENT_ID>
-AIRALO_CLIENT_SECRET=<CLIENTT_SECRET>
+# ───────── demo creds (task) ─────
+AIRALO_CLIENT_ID=7e29e2facf83359855f746fc490443e6
+AIRALO_CLIENT_SECRET=e5NNajm6jNAzrWsKoAdr41WfDiMeS1l6IcGdhmbb
 ```
 
-If you move the file to repo root, just delete the path option in `src/api/airaloClient.ts`.
+*No root-level `.env` – the client loads from `configs/env`.*
 
-## 4 · Running tests
+## 4 · Run tests
 
-| Scope | Command |
-|-------|---------|
-| API only | `pnpm run test:api` |
-| UI only | `pnpm run test:ui` (placeholder spec) |
-| All | `pnpm run test` |
+| Scope            | Command |
+|------------------|---------|
+| **API**          | `pnpm run test:api` |
+| **API negative** | `pnpm run test:api --grep @negative` |
+| **UI**           | `pnpm run test:ui` |
+| **All**          | `pnpm run test` |
 
-Scripts (`package.json`):
+`package.json` scripts:
 
 ```jsonc
 {
-  "test":      "playwright test --config=configs/playwright.config.ts",
-  "test:api":  "playwright test --config=configs/playwright.config.ts --project=api",
-  "test:ui":   "playwright test --config=configs/playwright.config.ts --project=ui"
+  "test": "playwright test --config=configs/playwright.config.ts",
+  "test:api": "playwright test --config=configs/playwright.config.ts --project=api",
+  "test:ui": "playwright test --config=configs/playwright.config.ts --project=ui"
 }
 ```
 
-## 5 · Viewing reports
-
-### 5.1 Playwright HTML
+Headed / debug:
 
 ```bash
-# after a run
+pnpm exec playwright test --project=ui --headed --slow-mo 100 \
+  --config=configs/playwright.config.ts
+
+# or:
+PWDEBUG=1 pnpm run test:ui
+
+
+The default UI project already starts non-headless at 1920 × 1080.
+```
+
+## 5 · Reports
+
+```bash
+# after any run
 pnpm exec playwright show-report
 ```
 
-Opens an interactive dashboard with traces, videos, and screenshots.
+*Interactive HTML* with traces, screenshots, videos.
 
-## 6 · Folder layout
+## 6 · Structure
 
-```
+```bash
 configs/
-  ├─ env/.env                  # secrets
-  └─ playwright.config.ts      # projects, reporters
+  ├─ env/.env
+  └─ playwright.config.ts        # projects, reporters, viewport
 src/
-  api/                         # axios client, endpoint constants
-  pages/                       # (placeholder) Playwright POMs
+  ├─ api/
+  │   ├─ airaloClient.ts         # Axios + token cache + helpers
+  │   └─ endpoints.ts
+  ├─ builders/
+  │   └─ orderBuilder.ts         # buildOrderForm()
+  └─ pages/                      # Playwright POMs
 tests/
-  api/                         # sims.list.spec.ts, order.kallur.spec.ts
-  ui/                          # placeholder UI spec
-artifacts/ (git-ignored)       # videos, traces, html
+  ├─ api/
+  │   ├─ auth.spec.ts            # token smoke
+  │   ├─ order.kallur.spec.ts    # @positive
+  │   ├─ sims.list.spec.ts       # @positive
+  │   └─ negative.spec.ts        # @negative (401 / 422 etc.)
+  └─ ui/
+      └─ buy-japan.spec.ts
+artifacts/                       # traces, videos, html (git-ignored)
 ```
 
-# PENDING 
+## 7 · CI (GitHub Actions)
 
-## 7 · CI pipeline (GitHub Actions)
+`.github/workflows/ci.yml`
 
-`.github/workflows/ci.yml`:
-- Checkout → pnpm install
-- pnpm exec playwright install --with-deps
-- pnpm run test
-- Upload `artifacts/` so HTML report is downloadable from each build.
-- Add UI flows in `tests/ui/` using the Page-Object pattern under `src/pages/`.
-- Use `buildOrderForm()` helper for any new `/orders` scenarios.
+```
+A GitHub Actions workflow (.github/workflows/ci.yml) installs Node 20 + pnpm,
+caches the pnpm store and Playwright browsers, runs all API & UI tests
+headless, then uploads the HTML report and traces as an artifact.
+```

@@ -1,0 +1,20 @@
+{
+  "scripts": {
+    "test": "playwright test",
+    "test:api":  "playwright test --config=configs/playwright.config.ts --project=api",
+    "test:ui":  "playwright test --config=configs/playwright.config.ts --project=ui"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.52.0",
+    "dotenv-flow": "^4.1.0",
+    "playwright": "^1.52.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.8.3"
+  },
+  "dependencies": {
+    "axios": "^1.9.0",
+    "form-data": "^4.0.2",
+    "qs": "^6.14.0"
+  }
+}
+

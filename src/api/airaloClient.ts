@@ -29,6 +29,9 @@ async function getToken(): Promise<string> {
     return cachedToken;
 }
 
+// expose a cached-JWT getter for specs
+export const token = () => getToken();
+
 export const api = axios.create({
     baseURL: `${AIRALO_BASE_URL}/v2`,
     timeout: 15_000,
@@ -41,6 +44,19 @@ api.interceptors.request.use(async cfg => {
         Authorization: `Bearer ${await getToken()}`,
     };
     return cfg;
+});
+
+// bare client – *no* interceptor, useful for 401 tests or bad tokens
+export const apiRaw = axios.create({
+    baseURL: `${AIRALO_BASE_URL}/v2`,
+    timeout: 15_000,
+    headers: { Accept: 'application/json' },
+});
+
+// expose helper methods on the same object so existing imports stay unchanged
+Object.assign(api, {
+    getRaw:  (url: string, cfg = {})            => apiRaw.get (url, cfg),
+    postRaw: (url: string, data: any, cfg = {}) => apiRaw.post(url, data, cfg),
 });
 
 export const buildOrderForm = (slug: string, qty = 6, desc = 'auto') => {

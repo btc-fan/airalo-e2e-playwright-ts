@@ -9,19 +9,18 @@ export class HomePage {
     constructor(private readonly page: Page) {
         this.search = page.locator('input[data-testid="search-input"]');
         this.localJapan = page.locator('ul.countries-list li span[data-testid="Japan-name"]');
-        this.consentBtn = page.getByRole('button', { name: /accept/i });
+        this.consentBtn = page.locator('[id="onetrust-accept-btn-handler"]',);
         this.resultsBox = page.locator('ul.countries-list');
     }
 
     async goto() {
-        await this.page.goto('https://www.airalo.com/', { waitUntil: 'networkidle' });
+        await this.page.goto('https://www.airalo.com/');
 
-        // Handle cookie consent if present
-        await this.consentBtn.click().catch(() => {});
-
-        // Wait for the search input to be visible
-        await this.page.waitForLoadState('domcontentloaded');
-        await this.page.waitForSelector('input[data-testid="search-input"]', { state: 'visible', timeout: 15000 });
+        // Wait for consent button if present and click it
+        const isConsentVisible = await this.consentBtn.isVisible({ timeout: 5000 }).catch(() => false);
+        if (isConsentVisible) {
+            await this.consentBtn.click();
+        }
     }
 
     async pickJapanLocal() {

@@ -100,12 +100,41 @@ tests/
 artifacts/                       # traces, videos, html (git-ignored)
 ```
 
-## 7 · CI (GitHub Actions)
+## 7 · Overview of test implementation
 
-`.github/workflows/ci.yml`
+| Area | Test case | Approach / Assertions |
+|------|-----------|------------------------|
+| **Auth** | Fetch OAuth2 token | `POST /token` once; response cached in `airaloClient.ts`. Assert `200` and JWT prefix `eyJ`. |
+| **API positive** | Create Kallur eSIM | `POST /orders` with dynamic multipart form from `buildOrderForm()`. Assert `200` and `package_id`. |
+| | Bulk Merhaba order (6 SIMs) | Same endpoint, `quantity = 6`, expect `201/200` and array of 6 SIMs. |
+| | List SIMs | `GET /sims` page 1 – expect pagination meta and 25 records; secondary test filters for 6 fresh "Merhaba" SIMs. |
+| **API negative** | `/orders` bad slug / invalid qty / >50 qty / missing token | Parameterised table tests (`@negative` tag) expecting `422` or `401`. |
+| | `/sims` bad page / missing token | Expect `400` (validation) or `401`. |
+| **UI** | Search "Japan" → pick 2nd Moshi Moshi | Page-Objects: `HomePage` (search + cookie consent), `PackageListPage` (card index), `SimDetailCard` (header + row assertions). Assertions cover title, coverage, data, validity, price. **Note:** Cloudflare intermittently blocks GitHub-hosted browsers; see section 9. |
 
+## 8 · CI (GitHub Actions)
+The workflow `.github/workflows/e2e.yml`
+
+```yaml
+steps:
+  - checkout
+  - pnpm/action-setup@v3
+  - actions/setup-node@v4 (cache=pnpm)
+  - run: pnpm install
+  - run: pnpm exec playwright install --with-deps
+  - run: pnpm exec playwright test --config=configs/playwright.config.ts
+    continue-on-error: true # keep job alive to publish report
+  - uses: actions/upload-artifact@v4
+    with:
+      name: playwright-report
+      path: |
+        playwright-report
+        test-results/**/*.zip
 ```
-A GitHub Actions workflow (.github/workflows/ci.yml) installs Node 20 + pnpm,
-caches the pnpm store and Playwright browsers, runs all API & UI tests
-headless, then uploads the HTML report and traces as an artifact.
-```
+*The job fails **after** the report is uploaded if any test failed.*
+
+## 9 · Cloudflare note (UI tests in CI)
+`airalo.com` is behind Cloudflare. Headless Chromium on GitHub-Actions occasionally receives a *"Sorry, you have been blocked"* page, breaking UI tests while API tests continue to pass. Work-arounds (not yet committed):
+* run UI flow against a staging host (if available)
+* execute CI on a self-hosted runner with a stable IP allow-listed in Cloudflare
+* use Playwright's `--proxy-server` with a residential proxy

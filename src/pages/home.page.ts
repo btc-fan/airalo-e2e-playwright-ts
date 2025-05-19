@@ -17,10 +17,10 @@ export class HomePage {
 
     async pickJapanLocal() {
         await this.search.fill('Japan');
-        await this.localJapan.waitFor({ state: 'visible', timeout: 1_000 }).catch(async () => {
+        await this.localJapan.waitFor({ state: 'visible', timeout: 10_000 }).catch(async () => {
             // dropdown collapsed; try again
             await this.search.click();
-            await this.localJapan.waitFor({ state: 'visible', timeout: 1_000 });
+            await this.localJapan.waitFor({ state: 'visible', timeout: 10_000 });
         });
         await this.localJapan.click();
     }

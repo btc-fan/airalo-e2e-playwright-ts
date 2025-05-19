@@ -17,15 +17,14 @@ export class HomePage {
         await this.page.goto('https://www.airalo.com/');
 
         // Wait for consent button if present and click it
-        const isConsentVisible = await this.consentBtn.isVisible({ timeout: 5000 }).catch(() => false);
-        if (isConsentVisible) {
-            await this.consentBtn.click();
-        }
+        await this.consentBtn.isVisible({ timeout: 10000 }).catch(() => false);
+        await this.consentBtn.click();
+
     }
 
     async pickJapanLocal() {
         await this.search.fill('Japan');
-        await this.resultsBox.waitFor({ state: 'visible' });
+        await this.resultsBox.waitFor({ state: 'visible', timeout: 10000 });
         await this.localJapan.click();
     }
 }

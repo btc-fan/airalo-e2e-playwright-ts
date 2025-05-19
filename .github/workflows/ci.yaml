@@ -1,10 +1,9 @@
+# .github/workflows/e2e.yml
 name: e2e
 
 on:
-  push:
-    branches: [main]
-  pull_request:
-    branches: [main]
+  push:         { branches: [main] }
+  pull_request: { branches: [main] }
 
 jobs:
   tests:
@@ -16,8 +15,7 @@ jobs:
       AIRALO_CLIENT_SECRET: ${{ secrets.AIRALO_CLIENT_SECRET }}
 
     steps:
-
-      # 1. checkout
+      # 1. Checkout
       - uses: actions/checkout@v4
 
       # 2. Node + pnpm (with cache)
@@ -28,28 +26,29 @@ jobs:
           node-version: 20
           cache: pnpm
 
-      # 3. deps + browsers
-      - run: pnpm install --no-frozen-lockfile
+      # 3. Dependencies + browsers
+      - run: pnpm install --frozen-lockfile
       - run: pnpm exec playwright install --with-deps
 
-      # 4. run the whole suite
+      # 4. Run the full suite
+      #    ─ continue-on-error keeps the job alive so we can publish the report
       - name: Run tests
+        id: e2e
         run: pnpm exec playwright test --config=configs/playwright.config.ts
-        continue-on-error: false           # fail the job when tests fail
+        continue-on-error: true          # <-- keep going even when tests fail
 
-      # 5. (Optional) build static HTML if you *didn’t* use the html reporter
-      #    Comment this out if you already generate the report in step 4.
-      - name: Build HTML report
-        if: always()
-        run: pnpm exec playwright show-report --quiet
-
-      # 6. upload artefacts – will always exist now
-      - name: Upload Playwright report
-        if: always()
+      # 5. Upload HTML report + trace ZIPs
+      - name: Upload Playwright artefacts
+        if: always()                     # run whether tests passed or failed
         uses: actions/upload-artifact@v4
         with:
           name: playwright-report
           path: |
-            playwright-report              # static HTML dashboard
-            test-results/**/*.zip          # zipped traces
+            playwright-report            # html dashboard (made by the reporter)
+            test-results/**/*.zip        # trace files
           retention-days: 14
+
+      # 6. Fail the job **after** publishing artefacts (if tests failed)
+      - name: Set job result
+        if: steps.e2e.outcome == 'failure'
+        run: exit 1

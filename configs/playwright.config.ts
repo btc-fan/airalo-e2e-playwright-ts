@@ -14,7 +14,7 @@ export default defineConfig({
     reporter: [['list'], ['html']],
 
     use: {
-        headless: false,
+        headless: true,
         viewport: null,
         launchOptions: {
             args: ['--start-maximized']

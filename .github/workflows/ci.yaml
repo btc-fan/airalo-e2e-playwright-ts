@@ -1,4 +1,3 @@
-# .github/workflows/e2e.yml
 name: e2e
 
 on:
@@ -31,15 +30,14 @@ jobs:
       - run: pnpm exec playwright install --with-deps
 
       # 4. Run the full suite
-      #    ─ continue-on-error keeps the job alive so we can publish the report
       - name: Run tests
         id: e2e
         run: pnpm exec playwright test --config=configs/playwright.config.ts
-        continue-on-error: true          # <-- keep going even when tests fail
+        continue-on-error: true
 
       # 5. Upload HTML report + trace ZIPs
       - name: Upload Playwright artefacts
-        if: always()                     # run whether tests passed or failed
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: playwright-report

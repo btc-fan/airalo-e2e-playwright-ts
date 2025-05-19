@@ -1,1 +1,52 @@
-# TODO Add CI integration at the end
+name: e2e
+
+on:
+  push:         { branches: [main] }
+  pull_request: { branches: [main] }
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    env:
+      AIRALO_AUTH_URL:      ${{ secrets.AIRALO_AUTH_URL }}
+      AIRALO_BASE_URL:      ${{ secrets.AIRALO_BASE_URL }}
+      AIRALO_CLIENT_ID:     ${{ secrets.AIRALO_CLIENT_ID }}
+      AIRALO_CLIENT_SECRET: ${{ secrets.AIRALO_CLIENT_SECRET }}
+
+    steps:
+      # 1. Checkout
+      - uses: actions/checkout@v4
+
+      # 2. Node + pnpm (with cache)
+      - uses: pnpm/action-setup@v3
+        with: { version: 8 }
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      # 3. Dependencies + browsers
+      - run: pnpm install --no-frozen-lockfile
+      - run: pnpm exec playwright install --with-deps
+
+      # 4. Run the full suite
+      - name: Run tests
+        id: e2e
+        run: pnpm exec playwright test --config=configs/playwright.config.ts
+        continue-on-error: true
+
+      # 5. Upload HTML report + trace ZIPs
+      - name: Upload Playwright artefacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: |
+            playwright-report
+            test-results/**/*.zip
+          retention-days: 14
+
+      # 6. Fail the job **after** publishing artefacts (if tests failed)
+      - name: Set job result
+        if: steps.e2e.outcome == 'failure'
+        run: exit 1

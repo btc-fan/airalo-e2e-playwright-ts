@@ -25,8 +25,8 @@ Create `configs/env/.env` (git-ignored):
 
 ```ini
 # ───────── sandbox hosts ─────────
-AIRALO_AUTH_URL=VALUE
-AIRALO_BASE_URL=VALUE
+AIRALO_AUTH_URL=https:VALUE
+AIRALO_BASE_URL=https:VALUE
 
 # ───────── demo creds (task) ─────
 AIRALO_CLIENT_ID=VALUE

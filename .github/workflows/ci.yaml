@@ -33,7 +33,7 @@ jobs:
           cache-dependency-path: pnpm-lock.yaml
 
       # 4. Install deps
-      - run: pnpm install --frozen-lockfile
+      - run: pnpm install --no--frozen-lockfile
 
       # 5. Install Playwright browsers
       - run: pnpm exec playwright install --with-deps

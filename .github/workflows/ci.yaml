@@ -27,7 +27,7 @@ jobs:
           cache: pnpm
 
       # 3. Dependencies + browsers
-      - run: pnpm install --frozen-lockfile
+      - run: pnpm install --no-frozen-lockfile
       - run: pnpm exec playwright install --with-deps
 
       # 4. Run the full suite

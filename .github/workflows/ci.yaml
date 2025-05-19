@@ -37,14 +37,23 @@ jobs:
       - run: pnpm exec playwright install --with-deps
 
       # 6. Run tests
-      - run: pnpm run test
+      - name: Run tests
+        run: pnpm run test
+        continue-on-error: false
+        id: tests
 
-      # 7. Upload report even on failure
-      - uses: actions/upload-artifact@v4
+      # 7. Build the static HTML (creates ./playwright-report)
+      - name: Build HTML report
+        run: pnpm exec playwright show-report --quiet
+        if: always()
+
+      # 8. Upload report + traces
+      - name: Upload Playwright artifacts
+        uses: actions/upload-artifact@v4
         if: always()
         with:
           name: playwright-report
           path: |
             playwright-report
             test-results/**/*.zip
-          retention-days: 7
+          retention-days: 14

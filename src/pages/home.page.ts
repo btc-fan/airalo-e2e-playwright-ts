@@ -27,6 +27,7 @@ export class HomePage {
     }
 
     async pickJapanLocal() {
+        await expect(this.search).toBeVisible({ timeout: 15_000 });
         await this.search.fill('Japan');
         await this.resultsBox.waitFor({ state: 'visible', timeout: 2_000 }).catch(async () => {
             // dropdown collapsed; try again

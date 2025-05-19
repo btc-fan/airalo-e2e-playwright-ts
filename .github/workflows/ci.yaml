@@ -20,20 +20,18 @@ jobs:
       - uses: actions/checkout@v4
 
       # 2. Install pnpm (adds it to PATH)
-      - uses: pnpm/action-setup@v3      # <── installs & exports PNPM
+      - uses: pnpm/action-setup@v3
         with:
           version: 8
-          run_install: false            # we'll run pnpm install ourselves
+          run_install: false
 
       # 3. Setup Node + **enable pnpm cache**
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: pnpm                   # now safe – pnpm is on PATH
-          cache-dependency-path: pnpm-lock.yaml
 
       # 4. Install deps
-      - run: pnpm install --no--frozen-lockfile
+      - run: npm i -g pnpm@8
 
       # 5. Install Playwright browsers
       - run: pnpm exec playwright install --with-deps

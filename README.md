@@ -25,12 +25,12 @@ Create `configs/env/.env` (git-ignored):
 
 ```ini
 # ───────── sandbox hosts ─────────
-AIRALO_AUTH_URL=https://sandbox-partners-api.airalo.com/v2/token
-AIRALO_BASE_URL=https://sandbox-partners-api.airalo.com
+AIRALO_AUTH_URL=VALUE
+AIRALO_BASE_URL=VALUE
 
 # ───────── demo creds (task) ─────
-AIRALO_CLIENT_ID=7e29e2facf83359855f746fc490443e6
-AIRALO_CLIENT_SECRET=e5NNajm6jNAzrWsKoAdr41WfDiMeS1l6IcGdhmbb
+AIRALO_CLIENT_ID=VALUE
+AIRALO_CLIENT_SECRET=VALUE
 ```
 
 *No root-level `.env` – the client loads from `configs/env`.*

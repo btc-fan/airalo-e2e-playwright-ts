@@ -1,4 +1,4 @@
-# Airalo E2E (Playwright + TypeScript)
+# Airalo E2E (Playwright + TypeScript) 
 
 API and UI automation framework for the Airalo homework task.
 
